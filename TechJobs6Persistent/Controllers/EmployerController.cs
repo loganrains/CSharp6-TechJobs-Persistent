@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,29 +14,54 @@ using TechJobs6Persistent.ViewModels;
 namespace TechJobs6Persistent.Controllers
 {
     public class EmployerController : Controller
-    { 
+    {
+        private JobDbContext? context;
+
+        public EmployerController(JobDbContext dbcontext)
+        {
+            context = dbcontext;
+        }
+
         // GET: /<controller>/
         [HttpGet]
         public IActionResult Index()
         {
-            return View();
+            List<Employer> employers = context.Employers.ToList();
+            return View(employers);
         }
 
         [HttpGet]
         public IActionResult Create()
         {
-            return View();
+            AddEmployerViewModel addEmployerViewModel = new AddEmployerViewModel();
+            return View(addEmployerViewModel);
         }
 
         [HttpPost]
-        public IActionResult ProcessCreateEmployerForm()
+        [Route("/Employers/Add")]
+        public IActionResult ProcessCreateEmployerForm(AddEmployerViewModel addEmployerViewModel)
         {
-            return View();
+            if (ModelState.IsValid)
+            {
+                Employer newEmployer = new Employer
+                {
+                    Name = addEmployerViewModel.Name,
+                    Location = addEmployerViewModel.Location
+                };
+
+                context.Employers.Add(newEmployer);          // <<<May Need Work>>>
+                context.SaveChanges();
+
+                return Redirect("/Employers");
+            }
+
+            return View(addEmployerViewModel);
         }
 
         public IActionResult About(int id)
         {
-            return View();
+            Employer newEmployer = context.Employers.Find(id);          // <<<May Need Work>>>
+            return View(newEmployer);
         }
 
     }
